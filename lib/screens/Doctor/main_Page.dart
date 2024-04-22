@@ -114,10 +114,10 @@ class _DoctorPageState extends State<DoctorPage> {
                   fontWeight: FontWeight.normal,
                 )),
             onPressed: () {
-              Navigator.push(context,
-                      MaterialPageRoute(builder: ((context) {
-                    return Attendace();
-                  })));
+              // Navigator.push(context,
+              //         MaterialPageRoute(builder: ((context) {
+              //       return Attendace();
+              //     })));
             },
             child: const Text(
               'Attendacne List',

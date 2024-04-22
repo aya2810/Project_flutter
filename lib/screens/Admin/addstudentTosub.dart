@@ -1,13 +1,15 @@
 // ignore_for_file: unused_local_variable
 
-import 'dart:ffi';
+import 'dart:convert';
 import 'dart:io';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:file_picker/file_picker.dart';
-import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
 import 'package:ghyabko/screens/auth/Login_Screen.dart';
+import 'package:pdf/pdf.dart';
+import 'package:pdf/widgets.dart' as pw;
+
 
 class AddstudentTOsubject extends StatefulWidget {
   final String subjectID;
@@ -21,7 +23,7 @@ class AddstudentTOsubject extends StatefulWidget {
 }
 
 class _AddStudentState extends State<AddstudentTOsubject> {
-
+String jsonString = '';
   final FirebaseFirestore _firebaseFirestore = FirebaseFirestore.instance;
   List<Map<String,dynamic>> pdfData = [];
 
@@ -37,48 +39,67 @@ class _AddStudentState extends State<AddstudentTOsubject> {
 
   TextEditingController studentemail = TextEditingController();
 
+  // Future<void> _uploadAndConvertPdf() async {
+  //   try {
+  //     // Choose PDF file
+  //     FilePickerResult? result = await FilePicker.platform.pickFiles(
+  //       type: FileType.custom,
+  //       allowedExtensions: ['pdf'],
+  //     );
+
+  //     if (result != null) {
+  //       String? filePath = result.files.single.path;
+  //       if (filePath != null) {
+  //         // Convert PDF file to JSON
+  //         String jsonText = await _convertPdfToJson(filePath);
+  //         setState(() {
+  //           jsonString = jsonText;
+  //         });
+  //       }
+  //     }
+  //   } catch (e) {
+  //     print('Error: $e');
+  //   }
+  // }
+
+  // Future<String> _convertPdfToJson(String filePath) async {
+  //   // Load PDF
+  //   final pdf = pw.Document();
+  //   pdf.addPage(pw.Page(
+  //     build: (pw.Context context) {
+  //       return pw.Center(
+  //         child: pw.Text('Hello World', style: pw.TextStyle(fontSize: 40)),
+  //       );
+  //     },
+  //   ));
+
+  //   // Extract text from PDF
+  //   String text = await _getTextFromPdf(pdf);
+
+  //   // Convert text to JSON
+  //   List<String> lines = text.split('\n');
+  //   List<Map<String, dynamic>> jsonList = [];
+  //   for (String line in lines) {
+  //     jsonList.add({'text': line});
+  //   }
+  //   String jsonText = jsonEncode(jsonList);
+
+  //   return jsonText;
+  // }
+
+  // Future<String> _getTextFromPdf(pw.Document pdf) async {
+  //   final pdfOutput = await pdf.save();
+  //   final pdfDocument = PdfDocument.openData(pdfOutput);
+  //   final StringBuffer buffer = StringBuffer();
+  //   for (int i = 0; i < pdfDocument.length; i++) {
+  //     final page = await pdfDocument.getPage(i + 1);
+  //     final pageContent = await page.text;
+  //     buffer.write(pageContent);
+  //   }
+  //   return buffer.toString();
+  // }
 
 
-  Future<String> uploadPdf(String fileName, File file) async{
-    final refrence = FirebaseStorage.instance.ref().child("pdfs/$fileName.pdf"); 
-    final uploadTask = refrence.putFile(file);
-    await uploadTask.whenComplete(() {});
-    final downloadLink = await refrence.getDownloadURL();
-    return downloadLink;
-  }
-
-  void pickFile()async{
-    final pickedFile = await FilePicker.platform.pickFiles(
-      type: FileType.custom,
-      allowedExtensions: ['pdf'],
-    );
-
-    if(pickedFile != null){
-      String fileName = pickedFile.files[0].name;
-      File file = File(pickedFile.files[0].path!);
-      final downloadLink = await uploadPdf(fileName, file);
-      await _firebaseFirestore.collection("pdfs").add({
-        "name": fileName,
-        "url": downloadLink,
-      });
-      print("Pdf uploaded sucessfully");
-    }
-  }
-
-  void getAllPdf()async{
-    final results = await _firebaseFirestore.collection("pdfs").get();
-    pdfData = results.docs.map((e) => e.data()).toList();
-    setState(() {
-      
-    });
-  }
-
-  @override
-  void initState() {
-    // TODO: implement initState
-    super.initState();
-    getAllPdf();
-  }
   
 
   Widget build(BuildContext context) {
@@ -176,8 +197,26 @@ class _AddStudentState extends State<AddstudentTOsubject> {
                   color: constColor,
                   borderRadius: BorderRadius.circular(10),
                   child: MaterialButton(
-                    onPressed: () => {
-                      pickFile()
+                    onPressed: () async {
+                      // Choose PDF file
+                      FilePickerResult? result = await FilePicker.platform.pickFiles(
+                        type: FileType.custom,
+                        allowedExtensions: ['pdf'],
+                      );
+                      if (result != null) {
+                        String? pdfPath = result.files.single.path;
+                        if (pdfPath != null) {
+                          // Convert PDF file to JSON
+                          String? jsonText = await PdfToJsonConverter.convertPdfToJson(pdfPath);
+                          if (jsonText != null) {
+                            // Handle the JSON data
+                            print(jsonText);
+                          } else {
+                            print('Failed to convert PDF to JSON.');
+                          }
+                        }
+                      }
+                      // _uploadAndConvertPdf()
                     },
                     minWidth: 140,
                     height: 60,
