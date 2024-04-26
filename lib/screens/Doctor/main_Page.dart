@@ -1,7 +1,6 @@
 // ignore_for_file: file_names
 
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:ghyabko/screens/Doctor/Attendace.dart';
 import 'package:ghyabko/screens/Doctor/nofication_page.dart';
 import 'package:ghyabko/screens/auth/Login_Screen.dart';
 import 'package:flutter/material.dart';

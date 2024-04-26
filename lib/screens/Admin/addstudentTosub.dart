@@ -1,14 +1,13 @@
 // ignore_for_file: unused_local_variable
 
-import 'dart:convert';
 import 'dart:io';
-
+import 'dart:async';
+import 'package:excel/excel.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:file_picker/file_picker.dart';
+import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:ghyabko/screens/auth/Login_Screen.dart';
-import 'package:pdf/pdf.dart';
-import 'package:pdf/widgets.dart' as pw;
 
 
 class AddstudentTOsubject extends StatefulWidget {
@@ -22,10 +21,24 @@ class AddstudentTOsubject extends StatefulWidget {
   State<AddstudentTOsubject> createState() => _AddStudentState();
 }
 
+
+
+// class CustomPdfDocument {
+//   static Future<CustomPdfDocument> openData(Uint8List data) async {
+//     // Simulating opening PDF data
+//     print('Opening PDF data...');
+//     await Future.delayed(Duration(seconds: 1)); // Simulating async operation
+//     print('PDF data opened successfully.');
+//     return CustomPdfDocument();
+//   }
+// }
+
+
+
 class _AddStudentState extends State<AddstudentTOsubject> {
-String jsonString = '';
-  final FirebaseFirestore _firebaseFirestore = FirebaseFirestore.instance;
-  List<Map<String,dynamic>> pdfData = [];
+// String jsonString = '';
+  // final FirebaseFirestore _firebaseFirestore = FirebaseFirestore.instance;
+  // List<Map<String,dynamic>> pdfData = [];
 
   List<QueryDocumentSnapshot> data = [];
   addstudent() async {
@@ -39,68 +52,194 @@ String jsonString = '';
 
   TextEditingController studentemail = TextEditingController();
 
-  // Future<void> _uploadAndConvertPdf() async {
-  //   try {
-  //     // Choose PDF file
-  //     FilePickerResult? result = await FilePicker.platform.pickFiles(
-  //       type: FileType.custom,
-  //       allowedExtensions: ['pdf'],
-  //     );
+//   Future<void> _uploadAndConvertPdf() async {
+//   try {
+//     // Choose PDF file
+//     FilePickerResult? result = await FilePicker.platform.pickFiles(
+//       type: FileType.custom,
+//       allowedExtensions: ['pdf'],
+//     );
 
-  //     if (result != null) {
-  //       String? filePath = result.files.single.path;
-  //       if (filePath != null) {
-  //         // Convert PDF file to JSON
-  //         String jsonText = await _convertPdfToJson(filePath);
-  //         setState(() {
-  //           jsonString = jsonText;
-  //         });
-  //       }
-  //     }
-  //   } catch (e) {
-  //     print('Error: $e');
-  //   }
-  // }
+//     if (result != null) {
+//       String? filePath = result.files.single.path;
+//       if (filePath != null) {
+//         // Convert PDF file to JSON
+//         String jsonText = await _convertPdfToJson(filePath);
+//         setState(() {
+//           jsonString = jsonText;
+//         });
+//       }
+//     }
+//   } catch (e) {
+//     print('Error: $e');
+//   }
+// }
 
-  // Future<String> _convertPdfToJson(String filePath) async {
-  //   // Load PDF
-  //   final pdf = pw.Document();
-  //   pdf.addPage(pw.Page(
-  //     build: (pw.Context context) {
-  //       return pw.Center(
-  //         child: pw.Text('Hello World', style: pw.TextStyle(fontSize: 40)),
-  //       );
-  //     },
-  //   ));
+// Future<String> _convertPdfToJson(String filePath) async {
+//   // Load PDF
+//   final pdf = pw.Document();
+//   pdf.addPage(pw.Page(
+//     build: (pw.Context context) {
+//       return pw.Center(
+//         child: pw.Text('Hello World', style: pw.TextStyle(fontSize: 40)),
+//       );
+//     },
+//   ));
 
-  //   // Extract text from PDF
-  //   String text = await _getTextFromPdf(pdf);
+//   // Extract text from PDF
+//   String text = await _getTextFromPdf(pdf);
 
-  //   // Convert text to JSON
-  //   List<String> lines = text.split('\n');
-  //   List<Map<String, dynamic>> jsonList = [];
-  //   for (String line in lines) {
-  //     jsonList.add({'text': line});
-  //   }
-  //   String jsonText = jsonEncode(jsonList);
+//   // Convert text to JSON
+//   List<String> lines = text.split('\n');
+//   List<Map<String, dynamic>> jsonList = [];
+//   for (String line in lines) {
+//     jsonList.add({'text': line});
+//   }
+//   String jsonText = jsonEncode(jsonList);
 
-  //   return jsonText;
-  // }
+//   return jsonText;
+// }
 
-  // Future<String> _getTextFromPdf(pw.Document pdf) async {
-  //   final pdfOutput = await pdf.save();
-  //   final pdfDocument = PdfDocument.openData(pdfOutput);
-  //   final StringBuffer buffer = StringBuffer();
-  //   for (int i = 0; i < pdfDocument.length; i++) {
-  //     final page = await pdfDocument.getPage(i + 1);
-  //     final pageContent = await page.text;
-  //     buffer.write(pageContent);
-  //   }
-  //   return buffer.toString();
-  // }
+// Future<String> _getTextFromPdf(pw.Document pdf) async {
+//   final pdfOutput = await pdf.save();
+//   final pdfDocument = PdfDocument.openData(Uint8List.fromList(pdfOutput));
+//   final StringBuffer buffer = StringBuffer();
+//   for (int i = 0; i < pdfDocument.pagesCount; i++) {
+//     final page = pdfDocument.getPage(i + 1);
+//     final pageContent = await page.text;
+//     buffer.write(pageContent);
+//   }
+//   return buffer.toString();
+// }
 
 
-  
+
+
+// Future<void> _handlePdfData() async {
+//   try{
+//     FilePickerResult? result = await FilePicker.platform.pickFiles(
+//       type: FileType.custom,
+//       allowedExtensions: ['pdf'],
+//     );
+
+//       if (result != null) {
+//         String? filePath = result.files.single.path;
+//         if (filePath != null) {
+//           // Convert PDF file to JSON
+//           String jsonText = await _convertPdfToJson(filePath);
+//           setState(() {
+//             jsonString = jsonText;
+//           });
+//         }
+//       }
+//     } catch (e) {
+//       print('Error: $e');
+//     }
+//   }
+
+//   Future<String> _convertPdfToJson(String filePath) async {
+//     // Simulating converting PDF to JSON
+//     print('Converting PDF to JSON...');
+//     await Future.delayed(Duration(seconds: 1)); // Simulating async operation
+
+//     // Example JSON data
+//     List<Map<String, dynamic>> jsonList = [
+//       // {'name': 'John Doe', 'age': 30},
+//       // {'name': 'Jane Smith', 'age': 25},
+//     ];
+
+//     String jsonText = jsonEncode(jsonList);
+//     print('PDF converted to JSON successfully.');
+//     return jsonText;
+//   }
+
+//   Future<String> uploadPdfToStorage(File pdfFile) async {
+//   try {
+//     FirebaseStorage storage = FirebaseStorage.instance;
+//     Reference ref = storage.ref().child('pdfs').child('sample.pdf'); // Name of the file in Firebase Storage
+//     UploadTask uploadTask = ref.putFile(pdfFile);
+//     TaskSnapshot taskSnapshot = await uploadTask.whenComplete(() => null);
+//     String downloadUrl = await taskSnapshot.ref.getDownloadURL();
+//     return downloadUrl;
+//   } catch (e) {
+//     print('Error uploading PDF to Firebase Storage: $e');
+//     return '';
+//   }
+// }
+
+//   Future<void> savePdfDownloadUrlToDatabase(String downloadUrl) async {
+//   try {
+//     DatabaseReference databaseRef =
+//         FirebaseDatabase.instance.reference().child('pdf_info');
+//     await databaseRef.set({'downloadUrl': downloadUrl});
+//     print('PDF download URL saved to Firebase Database.');
+//   } catch (e) {
+//     print('Error saving PDF download URL to Firebase Database: $e');
+//   }
+// }
+
+
+  List<List<dynamic>> _xlsxData = [];
+
+  Future<void> _openFileExplorer() async {
+    FilePickerResult? result = await FilePicker.platform.pickFiles(
+      type: FileType.custom,
+      allowedExtensions: ['xlsx'],
+    );
+
+    if (result != null) {
+      File file = File(result.files.single.path!);
+      var bytes = await file.readAsBytes();
+      var excel = Excel.decodeBytes(bytes);
+      var table = excel.tables[excel.tables.keys.first];
+      setState(() {
+        _xlsxData = table!.rows;
+      });
+
+      // Store Excel data in Firestore
+      await storeDataInFirestore(_xlsxData);
+    }
+  }
+
+   Future<void> storeDataInFirestore(List<List<dynamic>> data) async {
+    CollectionReference collection = FirebaseFirestore.instance.collection('excel_data');
+    for (var row in data) {
+      if (row.length >= 3) { // Check if the row has at least 3 elements
+        String name = row[0].toString();
+        String email = row[1].toString();
+        String password = row[2].toString();
+
+        await collection.add({
+          'name': name,
+          'email': email,
+          'password': password,
+        });
+      } else {
+        print('Invalid row: $row'); // Handle or log invalid rows
+      }
+    }
+  }
+
+  void processExcelData(List<List<dynamic>> data) async {
+    CollectionReference collection = FirebaseFirestore.instance.collection('excel_data');
+    for (var row in data) {
+      if (row.length >= 3) {
+        String name = row[0].toString();
+        String email = row[1].toString();
+        String password = row[2].toString();
+
+        await collection.add({
+          'name': name,
+          'email': email,
+          'password': password,
+        });
+      } else {
+        print('Invalid row: $row');
+      }
+    }
+  }
+
+
 
   Widget build(BuildContext context) {
     return Scaffold(
@@ -196,37 +335,34 @@ String jsonString = '';
                 child: Material(
                   color: constColor,
                   borderRadius: BorderRadius.circular(10),
-                  child: MaterialButton(
-                    onPressed: () async {
-                      // Choose PDF file
-                      FilePickerResult? result = await FilePicker.platform.pickFiles(
-                        type: FileType.custom,
-                        allowedExtensions: ['pdf'],
-                      );
-                      if (result != null) {
-                        String? pdfPath = result.files.single.path;
-                        if (pdfPath != null) {
-                          // Convert PDF file to JSON
-                          String? jsonText = await PdfToJsonConverter.convertPdfToJson(pdfPath);
-                          if (jsonText != null) {
-                            // Handle the JSON data
-                            print(jsonText);
-                          } else {
-                            print('Failed to convert PDF to JSON.');
-                          }
-                        }
-                      }
-                      // _uploadAndConvertPdf()
-                    },
-                    minWidth: 140,
-                    height: 60,
-                    child: const Text(
-                      'Upload PDF',
-                      style: TextStyle(
-                        fontSize: 22.5,
-                        color: Colors.white,
+                  child: Column(
+                    children: <Widget>[
+                      MaterialButton(
+                        onPressed: () => {
+                          _openFileExplorer()
+                        },
+                        minWidth: 140,
+                        height: 60,
+                        child: const Text(
+                          'Upload XLSX',
+                          style: TextStyle(
+                            fontSize: 22.5,
+                            color: Colors.white,
+                          ),
+                        ),
                       ),
-                    ),
+                      SizedBox(height: 20),
+                      Expanded(
+                        child: ListView.builder(
+                          itemCount: _xlsxData.length,
+                          itemBuilder: (BuildContext context, int index) {
+                            return ListTile(
+                              title: Text(_xlsxData[index].join(', ')),
+                            );
+                          },
+                        ),
+                      ),
+                    ],
                   ),
                 ),
               ),
