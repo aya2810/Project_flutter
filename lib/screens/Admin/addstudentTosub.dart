@@ -1,13 +1,12 @@
 // ignore_for_file: unused_local_variable
-
-import 'dart:ffi';
+import 'dart:async';
 import 'dart:io';
-
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:file_picker/file_picker.dart';
-import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
 import 'package:ghyabko/screens/auth/Login_Screen.dart';
+import 'package:file_picker/file_picker.dart';
+import 'package:csv/csv.dart';
+// import 'package:flutter/services.dart' show rootBundle;
 
 class AddstudentTOsubject extends StatefulWidget {
   final String subjectID;
@@ -21,10 +20,6 @@ class AddstudentTOsubject extends StatefulWidget {
 }
 
 class _AddStudentState extends State<AddstudentTOsubject> {
-
-  final FirebaseFirestore _firebaseFirestore = FirebaseFirestore.instance;
-  List<Map<String,dynamic>> pdfData = [];
-
   List<QueryDocumentSnapshot> data = [];
   addstudent() async {
     CollectionReference student = FirebaseFirestore.instance
@@ -37,49 +32,72 @@ class _AddStudentState extends State<AddstudentTOsubject> {
 
   TextEditingController studentemail = TextEditingController();
 
-
-
-  Future<String> uploadPdf(String fileName, File file) async{
-    final refrence = FirebaseStorage.instance.ref().child("pdfs/$fileName.pdf"); 
-    final uploadTask = refrence.putFile(file);
-    await uploadTask.whenComplete(() {});
-    final downloadLink = await refrence.getDownloadURL();
-    return downloadLink;
-  }
-
-  void pickFile()async{
-    final pickedFile = await FilePicker.platform.pickFiles(
+  void _openFileExplorer() async {
+    FilePickerResult? result = await FilePicker.platform.pickFiles(
       type: FileType.custom,
-      allowedExtensions: ['pdf'],
+      allowedExtensions: ['csv'],
     );
 
-    if(pickedFile != null){
-      String fileName = pickedFile.files[0].name;
-      File file = File(pickedFile.files[0].path!);
-      final downloadLink = await uploadPdf(fileName, file);
-      await _firebaseFirestore.collection("pdfs").add({
-        "name": fileName,
-        "url": downloadLink,
-      });
-      print("Pdf uploaded sucessfully");
+    if (result != null) {
+      File file = File(result.files.single.path!);
+
+      final CollectionReference contacts = FirebaseFirestore.instance.collection('subject');
+
+      final myData = await file.readAsString();
+      List<List<dynamic>> csvTable = CsvToListConverter().convert(myData);
+      List<List<dynamic>> data = csvTable;
+
+      for (var i=0; i<data.length; i++){
+      var record = {
+        "name": data[i][0],
+        "email": data[i][1]
+      };
+      contacts.add(record);
+     }
+      // var bytes = await file.readAsBytes();
+      // var excel = Excel.decodeBytes(bytes);
+      // var table = excel.tables[excel.tables.keys.first];
+      // setState(() {
+      //   _xlsxData = table!.rows;
+      // });
+       // Store Excel data in Firestore
+      // await storeDataInFirestore();
     }
   }
 
-  void getAllPdf()async{
-    final results = await _firebaseFirestore.collection("pdfs").get();
-    pdfData = results.docs.map((e) => e.data()).toList();
-    setState(() {
-      
-    });
-  }
+  // void storeDataInFirestore() async {
+  //    final CollectionReference contacts = FirebaseFirestore.instance.collection('contacts');
+    //  final myData = await rootBundle.loadString("file");
+    //  List<List<dynamic>> csvTable = CsvToListConverter().convert(myData);
+    //  List<List<dynamic>> data = [];
+     
+    //  data = csvTable;
+    //  for (var i=0; i<data.length; i++){
+    //   var record = {
+    //     "name": data[i][1],
+    //     "email": data[i][2]
+    //   };
+    //   contacts.add(record);
+    //  }
+    // for (var row in data) {
+    //   if (row.length >= 3) { // Check if the row has at least 3 elements
+    //     String name = row[0].toString();
+    //     String email = row[1].toString();
+    //     String password = row[2].toString();
 
-  @override
-  void initState() {
-    // TODO: implement initState
-    super.initState();
-    getAllPdf();
-  }
-  
+    //     await collection.add({
+    //       'name': name,
+    //       'email': email,
+    //       'password': password,
+    //     });
+    //   } else {
+    //     print('Invalid row: $row'); // Handle or log invalid rows
+    //   }
+    // }
+  // }
+
+
+
 
   Widget build(BuildContext context) {
     return Scaffold(
@@ -148,10 +166,10 @@ class _AddStudentState extends State<AddstudentTOsubject> {
                   ),
                 ),
               ),
-              Row(
+              Column(
                 children: [
                   Padding(
-                    padding: const EdgeInsets.symmetric(vertical: 25, horizontal: 40),
+                    padding: const EdgeInsets.symmetric(vertical: 25),
                     child: Material(
                       color: constColor,
                       borderRadius: BorderRadius.circular(10),
@@ -169,29 +187,31 @@ class _AddStudentState extends State<AddstudentTOsubject> {
                       ),
                     ),
                   ),
-                
-              Padding(
-                padding: const EdgeInsets.symmetric(vertical: 25,horizontal: 5),
+                  Padding(
+                padding: const EdgeInsets.symmetric(vertical: 5),
                 child: Material(
                   color: constColor,
                   borderRadius: BorderRadius.circular(10),
-                  child: MaterialButton(
-                    onPressed: () => {
-                      pickFile()
-                    },
-                    minWidth: 140,
-                    height: 60,
-                    child: const Text(
-                      'Upload PDF',
-                      style: TextStyle(
-                        fontSize: 22.5,
-                        color: Colors.white,
+                  child: Column(
+                    children: <Widget>[
+                      MaterialButton(
+                        onPressed: () => {_openFileExplorer()},
+                        minWidth: 140,
+                        height: 60,
+                        child: const Text(
+                          'Upload XLSX',
+                          style: TextStyle(
+                            fontSize: 22.5,
+                            color: Colors.white,
+                          ),
+                        ),
                       ),
-                    ),
+                      SizedBox(height: 10),
+                    ],
                   ),
                 ),
               ),
-              ],
+                ],
               ),
             ],
           ),
